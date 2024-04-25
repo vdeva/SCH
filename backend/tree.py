@@ -135,23 +135,22 @@ debate_tree = {
     },
 }
 
-
-
 import random
-import replicate
+from mistralai.client import MistralClient
+from mistralai.models.chat_completion import ChatMessage
 import os
 from dotenv import load_dotenv
 
 load_dotenv(".env")
 
-REPLICATE_API_TOKEN = os.getenv('REPLICATE_API_TOKEN')
+MISTRAL_API_TOKEN = os.getenv('MISTRAL_API_TOKEN')
 
+model = 'mistral-large-latest'
+client = MistralClient(api_key=MISTRAL_API_TOKEN)
 
-history = """<Opponent>Working from home diminishes collaboration and spontaneity among team members, which is crucial for creative projects. People need direct interaction to spark innovative ideas.</Opponent>
-<You>While face-to-face interaction is valuable, remote work offers flexibility and a better work-life balance. Many modern communication tools effectively bridge the gap in collaboration, allowing creativity to flourish in different ways.</You>
-<Opponent>The problem with remote work is that it can lead to isolation and a disconnect from the company's culture. Employees might feel less engaged or loyal to the organization.</Opponent>
-<You>Remote work, when managed well, can actually increase employee retention by addressing their needs for flexibility and autonomy. Companies can foster culture through regular virtual meetings and team-building activities.</You>
-<Opponent>But monitoring productivity is much harder when employees are scattered across various locations. There's a risk of decreased accountability and performance.</Opponent>"""
+history = """<Opponent> I firmly believe that Android is superior to Apple in every way. Android offers more customization options, a wider range of devices to choose from, and it's more affordable too. </Opponent>
+<You> While it's true that Android does offer more customization and a wider range of devices, Apple's ecosystem is seamless and they offer top-notch customer service. Plus, Apple devices tend to have a longer lifespan. </You>
+<Opponent> Well, that's where you're wrong. Android devices can last just as long with proper care. And as for customer service, Google's customer service is just as good, if not better. Plus, Android's open-source nature allows for more innovation and freedom. </Opponent>"""
 
 
 a_prompt_template = """You are in a debate.
@@ -161,6 +160,8 @@ Here is the history of the debate you are in:
 
 You are replying to your opponent. Use the strategy below:
 {action}
+
+Don't be polite. Be snarky.
 """
 
 
@@ -176,13 +177,16 @@ Only reply \"yes\" or \"no\". Do not answer anything else, do not describe your 
 
 def get_ai_response(prompt):
     # Communicate with an AI model to get a response, simulated here.
-    response = replicate.run("meta/meta-llama-3-70b-instruct",
-                             input={
-                                "prompt": prompt,
-                                "temperature": 0.6},)
+    response = client.chat(
+    model=model,
+    messages=[ChatMessage(
+        role='user', 
+        content=prompt)
+        ]
+    )
     
     # Assume the response is expected to be 'yes' or 'no'.
-    return ''.join(response)
+    return (response.choices[0].message.content)
 
 def q_response_parse(string):
     if 'yes' in string.lower():
