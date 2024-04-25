@@ -5,6 +5,7 @@ import random
 import csv
 import json
 import re
+import concurrent.futures
 
 
 REPLICATE_API_TOKEN = os.getenv('REPLICATE_API_TOKEN')
@@ -137,28 +138,36 @@ topics = [
     "The broader implications for the financial system: What lessons can be learned from the Silicon Valley Bank collapse, and how can the financial system be strengthened to prevent similar crises in the future?",
 ]
 
-all_convs = {}
-for i in range(1000):
-    prop = random.choice(list(properties.values()))
-    print(prop)
-    n_turns = random.randrange(1, 5, 2)
-    print(f"Generating {n_turns} turns")
-    topic = random.choice(topics)
-    print(topic)
-    # Temperature?
-    chat_conv= client.chat(
-        model=model,
-        messages=[ChatMessage(
-            role='user', 
-            content=conv_template.format(topic=topic, prop=prop, n_turns=n_turns))
-        ]
-    )
-    conv = chat_conv.choices[0].message.content
-    all_convs[i] = re.sub(r'Tweet \d+:\n', "", conv).replace("\n\n", "")
-    print(conv)
-    print("---")
+def generate_convs(n, properties=properties, topics=topics):
+    all_convs = {}
+    for i in range(n):
+        print(i)
+        prop = random.choice(list(properties.values()))
+        #print(prop)
+        n_turns = random.randrange(1, 5, 2)
+        #print(f"Generating {n_turns} turns")
+        topic = random.choice(topics)
+        #print(topic)
+        # Temperature?
+        chat_conv= client.chat(
+            model=model,
+            messages=[ChatMessage(
+                role='user', 
+                content=conv_template.format(topic=topic, prop=prop, n_turns=n_turns))
+            ],
+            temperature=1.,
+        )
+        conv = chat_conv.choices[0].message.content
+        all_convs[i] = re.sub(r'Tweet \d+:\n', "", conv).replace("\n\n", "")
+        #print(conv)
+        #print("---")
+    return all_convs
 
-# Write convs
-with open("all_convs.json",'w') as f:
-    json.dump(all_convs, f)
+def main(n):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+        results = list(executor.map(generate_convs, [n]))
+    # Write convs
+    with open("all_convs.json",'w') as f:
+        json.dump(results, f)
 
+main(100)
