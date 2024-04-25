@@ -98,79 +98,17 @@ debate_tree = {
 }
 
 
-import json
-import concurrent.futures
-import random
-from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
-import os
-from dotenv import load_dotenv
-
-load_dotenv(".env")
-
-MISTRAL_API_TOKEN = os.getenv('MISTRAL_API_TOKEN')
-
-model = 'mistral-large-latest'
-client = MistralClient(api_key=MISTRAL_API_TOKEN)
-
-history = """<Opponent> I firmly believe that Android is superior to Apple in every way. Android offers more customization options, a wider range of devices to choose from, and it's more affordable too. </Opponent>
-<You> While it's true that Android does offer more customization and a wider range of devices, Apple's ecosystem is seamless and they offer top-notch customer service. Plus, Apple devices tend to have a longer lifespan. </You>
-<Opponent> Well, that's where you're wrong. Android devices can last just as long with proper care. And as for customer service, Google's customer service is just as good, if not better. Plus, Android's open-source nature allows for more innovation and freedom. </Opponent>"""
-
-a_prompt_template = """You are in a debate.
-
-Here is the history of the debate you are in:
-{history}
-
-You are replying to your opponent. Use the strategy below:
-{action}
-
-Don't be polite. Be snarky.
-"""
-
-q_prompt_template = """You are in a debate.
-
-Here is the history of the debate you are in:
-{history}
-
-You are analysing the opponent's arguments. Based on your analysis, answer the question below:
-{question}
-
-Only reply \"yes\" or \"no\". Do not answer anything else, do not describe your thoughts. Merely just answer \"yes\" or \"no\"."""
-
-# Function to get response from AI
-def get_ai_response(prompt):
-    response = client.chat(model=model, messages=[ChatMessage(role="user", content=prompt)])
-    return response.choices[0].message.content
-
-def q_response_parse(string):
-    if "yes" in string.lower():
-        return "yes"
-    elif "no" in string.lower():
-        return "no"
-    return "err"
-
-def process_debate(history_item):
-    current_node = debate_tree["0"]
-    while "question" in current_node:
-        formatted_question = q_prompt_template.format(history=history_item, question=current_node["question"])
-        ai_answer = get_ai_response(formatted_question)
-        next_node_id = current_node["answers"][q_response_parse(ai_answer)]
-        current_node = debate_tree[next_node_id]
-    if "action" in current_node:
-        formatted_action = a_prompt_template.format(history=history_item, action=current_node["action"])
-        ai_action_response = get_ai_response(formatted_action)
-        return {"history": history_item, "action_id": current_node["id"], "response": ai_action_response}
+def recursive_process(node, indent=""):
+    if "answers" in node.keys():
+        for key in node["answers"].keys():
+            node_key = node["answers"][key]
+            ans_node = debate_tree[node_key]
+            if key == "yes":
+                print(indent + node["question"])
+            recursive_process(ans_node, " " * 10)
     else:
-        return {"history": history_item, "action_id": None, "response": "No action available"}
+        print(indent + node["id"])
 
-# Main execution with parallel processing
-def main():
-    histories = ["Argument about climate change", "Debate on economic policy", "Discussion on healthcare reforms"]
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = list(executor.map(process_debate, histories))
-    with open("debate_results.json", "w") as f:
-        json.dump(results, f)
 
-# Execute main function
-main()
+for key in debate_tree.keys():
+    recursive_process(debate_tree[key])
