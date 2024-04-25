@@ -147,46 +147,66 @@ load_dotenv(".env")
 REPLICATE_API_TOKEN = os.getenv('REPLICATE_API_TOKEN')
 
 
-prompt_template = """You are in a debate.
-
-Here is the history of the debate you are in:
-<Opponent>Working from home diminishes collaboration and spontaneity among team members, which is crucial for creative projects. People need direct interaction to spark innovative ideas.</Opponent>
+history = """<Opponent>Working from home diminishes collaboration and spontaneity among team members, which is crucial for creative projects. People need direct interaction to spark innovative ideas.</Opponent>
 <You>While face-to-face interaction is valuable, remote work offers flexibility and a better work-life balance. Many modern communication tools effectively bridge the gap in collaboration, allowing creativity to flourish in different ways.</You>
 <Opponent>The problem with remote work is that it can lead to isolation and a disconnect from the company's culture. Employees might feel less engaged or loyal to the organization.</Opponent>
 <You>Remote work, when managed well, can actually increase employee retention by addressing their needs for flexibility and autonomy. Companies can foster culture through regular virtual meetings and team-building activities.</You>
-<Opponent>But monitoring productivity is much harder when employees are scattered across various locations. There's a risk of decreased accountability and performance.</Opponent>
+<Opponent>But monitoring productivity is much harder when employees are scattered across various locations. There's a risk of decreased accountability and performance.</Opponent>"""
+
+
+a_prompt_template = """You are in a debate.
+
+Here is the history of the debate you are in:
+{history}
+
+You are replying to your opponent. Use the strategy below:
+{action}
+"""
+
+
+q_prompt_template = """You are in a debate.
+
+Here is the history of the debate you are in:
+{history}
 
 You are analysing the opponent's arguments. Based on your analysis, answer the question below:
 {question}
 
 Only reply \"yes\" or \"no\". Do not answer anything else, do not describe your thoughts. Merely just answer \"yes\" or \"no\"."""
 
-def get_ai_response(question):
-    # Format the question using the prompt template
-    formatted_question = prompt_template.format(question=question)
-    
-    # Communicate with an AI model to get a yes/no response, simulated here.
+def get_ai_response(prompt):
+    # Communicate with an AI model to get a response, simulated here.
     response = replicate.run("meta/meta-llama-3-70b-instruct",
                              input={
-                                "prompt": formatted_question,
-                                "temperature": 2},)
+                                "prompt": prompt,
+                                "temperature": 0.6},)
     
     # Assume the response is expected to be 'yes' or 'no'.
     return ''.join(response)
 
-def navigate_game_tree(tree, starting_node_id='0'):
+def q_response_parse(string):
+    if 'yes' in string.lower():
+        return 'yes'
+    elif 'no' in string.lower():
+        return 'no'
+    return 'err'
+
+def navigate_game_tree(tree, history, starting_node_id='0'):
     current_node = tree[starting_node_id]  # Start at the specified root node
 
     while 'question' in current_node:
         print(current_node['question'])  # Print the current question
 
+        # Format the question with the history
+        formatted_question = q_prompt_template.format(history=history, question=current_node['question'])
+        
         # Get AI's response to the current question
-        ai_answer = get_ai_response(current_node['question'])
+        ai_answer = get_ai_response(formatted_question)
         print(f"AI's answer: {ai_answer}")
 
         # Move to the next node based on the AI's answer
-        if ai_answer.lower() in current_node['answers']:
-            next_node_id = current_node['answers'][ai_answer.lower()]
+        if q_response_parse(ai_answer) in current_node['answers']:
+            next_node_id = current_node['answers'][q_response_parse(ai_answer)]
             current_node = tree[next_node_id]
         else:
             print("Error: AI provided an invalid response.")
@@ -195,6 +215,10 @@ def navigate_game_tree(tree, starting_node_id='0'):
     # Once we reach an action node, print the action
     if 'action' in current_node:
         print("Action to take:", current_node['action'])
+        # Format the action with the history
+        formatted_action = a_prompt_template.format(history=history, action=current_node['action'])
+        ai_action_response = get_ai_response(formatted_action)
+        print(f"AI's action response: {ai_action_response}")
 
 # Example usage of the function
-navigate_game_tree(debate_tree)
+navigate_game_tree(debate_tree, history)
