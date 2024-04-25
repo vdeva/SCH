@@ -1,0 +1,164 @@
+{
+    "question": "L'argumentation de l'adversaire est-elle déjà développée ?",
+    "node_type": "decision",
+    "OUI": {
+        "question": "Son argumentation nous met-elle en défaut ?",
+        "node_type": "decision",
+        "OUI": {
+            "question": "L'adversaire attaque-t-il directement notre thèse ?",
+            "node_type": "decision",
+            "OUI": {
+                "question": "Est-ce que l'attaque est objective ?",
+                "node_type": "decision",
+                "OUI": {
+                    "node_type": "stratagem",
+                    "stratagem": "S6",
+                    "howto": "",
+                    "description": "Petitio principii",
+                    "id": "1111",
+                    "state": "DEFENSE"
+                },
+                "NON": {
+                    "node_type": "stratagem",
+                    "stratagem": "S16",
+                    "howto": "",
+                    "description": "Argumentum ad hominem",
+                    "id": "1110",
+                    "state": "DEFENSE"
+                }
+            },
+            "NON": {
+                "question": "Peut-on utiliser les affirmations de l'adversaire contre lui-même ?",
+                "node_type": "decision",
+                "OUI": {
+                    "node_type": "stratagem",
+                    "stratagem": "S16",
+                    "howto": "",
+                    "description": "Exploiter les contradictions",
+                    "id": "1101",
+                    "state": "DEFENSE"
+                },
+                "NON": {
+                    "node_type": "stratagem",
+                    "stratagem": "S8",
+                    "howto": "",
+                    "description": "Impudence pour provoquer l’adversaire",
+                    "id": "1100",
+                    "state": "DEFENSE"
+                }
+            }
+        },
+        "NON": {
+            "question": "Les fondements de la thèse de l'adversaire sont-ils solides ?",
+            "node_type": "decision",
+            "OUI": {
+                "question": "Les conséquences de la thèse peuvent-elles être utilisées contre elle ?",
+                "node_type": "decision",
+                "OUI": {
+                    "question": "L'association de la thèse avec une vérité reconnue mène-t-elle à une contradiction ?",
+                    "node_type": "decision",
+                    "OUI": {
+                        "node_type": "stratagem",
+                        "stratagem": "S24",
+                        "howto": "",
+                        "description": "Apagogue pour une réfutation par l’absurde",
+                        "id": "10111",
+                        "state": "DIRECT REFUTATION"
+                    },
+                    "NON": {
+                        "node_type": "stratagem",
+                        "stratagem": "S25",
+                        "howto": "",
+                        "description": "Apagogue instanciée pour trouver un exemple contradictoire",
+                        "id": "10110",
+                        "state": "DIRECT REFUTATION"
+                    }
+                },
+                "NON": {
+                    "question": "L'adversaire est-il en position de force ?",
+                    "node_type": "decision",
+                    "OUI": {
+                        "node_type": "stratagem",
+                        "stratagem": "S29",
+                        "howto": "",
+                        "description": "Diversion",
+                        "id": "10101",
+                        "state": "DIRECT REFUTATION"
+                    },
+                    "NON": {
+                        "question": "Peut-on démontrer que les fondements sont faux ?",
+                        "node_type": "decision",
+                        "OUI": {
+                            "node_type": "stratagem",
+                            "stratagem": "S6",
+                            "howto": "",
+                            "description": "attaquer ses fondements",
+                            "id": "101001",
+                            "state": "DIRECT REFUTATION"
+                        },
+                        "NON": {
+                            "question": "Honnête ou pas ?",
+                            "node_type": "decision",
+                            "OUI": {
+                                "node_type": "stratagem",
+                                "stratagem": "S6",
+                                "howto": "",
+                                "description": "Renforcer l’attaque",
+                                "id": "1010001",
+                                "state": "DIRECT REFUTATION"
+                            },
+                            "NON": {
+                                "node_type": "stratagem",
+                                "stratagem": "S14",
+                                "howto": "",
+                                "description": "Déstabiliser l’adversaire",
+                                "id": "1010000",
+                                "state": "DIRECT REFUTATION"
+                            }
+                        }
+                    }
+                }
+            },
+            "NON": {
+                "node_type": "stratagem",
+                "stratagem": "S18",
+                "howto": "",
+                "description": "Mutatio controversiae",
+                "id": "100",
+                "state": "INDIRECT REFUTATION"
+            }
+        }
+    },
+    "NON": {
+        "question": "La thèse de l'adversaire est-elle clairement définie ?",
+        "node_type": "decision",
+        "OUI": {
+            "question": "La thèse contredit-elle des affirmations antérieures de l'adversaire (ad hominem) ?",
+            "node_type": "decision",
+            "OUI": {
+                "node_type": "stratagem",
+                "stratagem": "S16",
+                "howto": "",
+                "description": "Argumentum ad hominem pour relever les contradictions",
+                "id": "011",
+                "state": "CONTEXTUALIZATION"
+            },
+            "NON": {
+                "node_type": "stratagem",
+                "stratagem": "S24",
+                "howto": "",
+                "description": "Apagogue pour explorer les conséquences",
+                "id": "010",
+                "state": "CONTEXTUALIZATION"
+            }
+        },
+        "NON": {
+            "node_type": "stratagem",
+            "stratagem": "S1",
+            "howto": "",
+            "description": "Demander des clarifications",
+            "id": "00",
+            "state": "CONTEXTUALIZATION"
+        }
+    }
+}
