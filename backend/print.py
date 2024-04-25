@@ -97,96 +97,18 @@ debate_tree = {
     },
 }
 
-import random
-from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
-import os
-from dotenv import load_dotenv
 
-load_dotenv(".env")
-
-MISTRAL_API_TOKEN = os.getenv("MISTRAL_API_TOKEN")
-
-model = "mistral-large-latest"
-client = MistralClient(api_key=MISTRAL_API_TOKEN)
-
-history = """<Opponent> I firmly believe that Android is superior to Apple in every way. Android offers more customization options, a wider range of devices to choose from, and it's more affordable too. </Opponent>
-<You> While it's true that Android does offer more customization and a wider range of devices, Apple's ecosystem is seamless and they offer top-notch customer service. Plus, Apple devices tend to have a longer lifespan. </You>
-<Opponent> Well, that's where you're wrong. Android devices can last just as long with proper care. And as for customer service, Google's customer service is just as good, if not better. Plus, Android's open-source nature allows for more innovation and freedom. </Opponent>"""
-
-a_prompt_template = """You are in a debate.
-
-Here is the history of the debate you are in:
-{history}
-
-You are replying to your opponent. Use the strategy below:
-{action}
-
-Don't be polite. Be snarky.
-"""
-
-q_prompt_template = """You are in a debate.
-
-Here is the history of the debate you are in:
-{history}
-
-You are analysing the opponent's arguments. Based on your analysis, answer the question below:
-{question}
-
-Only reply \"yes\" or \"no\". Do not answer anything else, do not describe your thoughts. Merely just answer \"yes\" or \"no\"."""
+def recursive_process(node, indent=""):
+    if "answers" in node.keys():
+        for key in node["answers"].keys():
+            node_key = node["answers"][key]
+            ans_node = debate_tree[node_key]
+            if key == "yes":
+                print(indent + node["question"])
+            recursive_process(ans_node, " " * 10)
+    else:
+        print(indent + node["id"])
 
 
-def get_ai_response(prompt):
-    # Communicate with an AI model to get a response, simulated here.
-    response = client.chat(
-        model=model, messages=[ChatMessage(role="user", content=prompt)]
-    )
-
-    # Assume the response is expected to be 'yes' or 'no'.
-    return response.choices[0].message.content
-
-
-def q_response_parse(string):
-    if "yes" in string.lower():
-        return "yes"
-    elif "no" in string.lower():
-        return "no"
-    return "err"
-
-
-def navigate_game_tree(tree, history, starting_node_id="0"):
-    current_node = tree[starting_node_id]  # Start at the specified root node
-
-    while "question" in current_node:
-        print(current_node["question"])  # Print the current question
-
-        # Format the question with the history
-        formatted_question = q_prompt_template.format(
-            history=history, question=current_node["question"]
-        )
-
-        # Get AI's response to the current question
-        ai_answer = get_ai_response(formatted_question)
-        print(f"AI's answer: {ai_answer}")
-
-        # Move to the next node based on the AI's answer
-        if q_response_parse(ai_answer) in current_node["answers"]:
-            next_node_id = current_node["answers"][q_response_parse(ai_answer)]
-            current_node = tree[next_node_id]
-        else:
-            print("Error: AI provided an invalid response.")
-            break
-
-    # Once we reach an action node, print the action
-    if "action" in current_node:
-        print("Action to take:", current_node["action"])
-        # Format the action with the history
-        formatted_action = a_prompt_template.format(
-            history=history, action=current_node["action"]
-        )
-        ai_action_response = get_ai_response(formatted_action)
-        print(f"AI's action response: {ai_action_response}")
-
-
-# Example usage of the function
-navigate_game_tree(debate_tree, history)
+for key in debate_tree.keys():
+    recursive_process(debate_tree[key])
