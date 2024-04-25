@@ -9,21 +9,21 @@ model = 'mistral-large-latest'
 client = MistralClient(api_key=api_key)
 properties = {
     0: """
-        - The <Opponent>'s argumentation is already developed at the end of the conversation
-        - The <Opponent>'s argumentation does not put the <Defendant> at a disadvantage at the end of the conversation
-        - The foundations of the <Opponent>'s thesis are not solid
-        - The <Defendant> cannot demonstrate that the foundations of the <Opponent>'s thesis are false
-        - The <Opponent> is not honest
+        - The <Opponent>'s argumentation will already developed at the end of the conversation
+        - The <Opponent>'s argumentation will NOT put the <Defendant> at a disadvantage at the end of the conversation
+        - The foundations of the <Opponent>'s thesis will NOT be solid
+        - The <Defendant> cannot demonstrate that the foundations of the <Opponent>'s thesis are false at the end of the conversation
+        - The <Opponent> will NOT be honest
     """,
 }
 
 conv_template = """
 YYou are generating a conversation between two users, <Opponent> and <Defendant>, on the topic of {topic}. 
 
-The <Opponent> argumentation should respect the following properties:
+The <Opponent> argumentation will respect the following properties:
 {prop}
 
-Create a conversation between the <Opponent> and <Defendant>, structured with the appropriate user tags to enclose each message. The debate should consist of 3 turns. 
+Create a heated conversation between the <Opponent> and <Defendant>, structured with the appropriate user tags to enclose each message. The debate should consist of 3 turns. 
 
 Here is a template of the debate structured output:
 
@@ -44,7 +44,8 @@ tree_template_1 = "Here is a conversation between an <Opponent> and a <Defendant
 tree_template_2 = ": "
 tree_template_3 = """
 
-Now, let's traverse the following decision_tree (provided in JSON format) from the point of view of the <Defendant>. Only respond with the question and branch taken.
+Now, let's traverse the following decision_tree (provided in JSON format) from the point of view of the <Defendant>. 
+Only respond with the question value and branch taken value.
 
 decision_tree={
   'node_type': 'decision',
@@ -234,6 +235,11 @@ decision_tree={
 }
 """
 
+reply_template = """
+    You are the <Defendant> replying to an <Opponent> in a conversation. Here is the conversation history: {conv}.
+    Here is what you have inferred about the <Opponent> to craft your reply: {tree_traversal}
+"""
+
 topic = 'Android versus Apple'
 prop = properties[0]
 
@@ -255,5 +261,15 @@ chat_tree= client.chat(
         content=tree_template_1 + topic + tree_template_2 + conv + tree_template_3)
     ]
 )
-tree_leaf = chat_tree.choices[0].message.content
-print(tree_leaf)
+tree_traversal = chat_tree.choices[0].message.content
+print(tree_traversal)
+print("---")
+chat_reply= client.chat(
+    model=model,
+    messages=[ChatMessage(
+        role='user', 
+        content=reply_template.format(conv=conv, tree_traversal=tree_traversal))
+    ]
+)
+reply = chat_reply.choices[0].message.content
+print(reply)
