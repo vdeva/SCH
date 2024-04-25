@@ -138,7 +138,7 @@ topics = [
 ]
 
 all_convs = {}
-for i in range(10):
+for i in range(1000):
     prop = random.choice(list(properties.values()))
     print(prop)
     n_turns = random.randrange(1, 5, 2)
