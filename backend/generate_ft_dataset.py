@@ -10,20 +10,20 @@ client = MistralClient(api_key=api_key)
 properties = {
     0: """
         - The <Opponent>'s argumentation will already developed at the end of the conversation
-        - The <Opponent>'s argumentation will NOT put the <Defendant> at a disadvantage at the end of the conversation
+        - The <Opponent>'s argumentation will NOT put You at a disadvantage at the end of the conversation
         - The foundations of the <Opponent>'s thesis will NOT be solid
-        - The <Defendant> cannot demonstrate that the foundations of the <Opponent>'s thesis are false at the end of the conversation
+        - You cannot demonstrate that the foundations of the <Opponent>'s thesis are false at the end of the conversation
         - The <Opponent> will NOT be honest
     """,
 }
 
 conv_template = """
-YYou are generating a conversation between two users, <Opponent> and <Defendant>, on the topic of {topic}. 
+You are generating a conversation between two users, <Opponent> and <You>, on the topic of {topic}. 
 
 The <Opponent> argumentation will respect the following properties:
 {prop}
 
-Create a heated conversation between the <Opponent> and <Defendant>, structured with the appropriate user tags to enclose each message. The debate should consist of 3 turns. 
+Create a heated conversation between the <Opponent> and <You>, structured with the appropriate user tags to enclose each message. The debate should consist of 3 turns. 
 
 Here is a template of the debate structured output:
 
@@ -31,7 +31,7 @@ Turn 1:
 <Opponent> message from affirmer </Opponent>
 
 Turn 2:
-<Defendant> message from skeptic </Defendant>
+<You> message from skeptic </You>
 
 Turn 3:
 <Opponent> message from affirmer </Opponent>
@@ -40,11 +40,11 @@ Generate a conversation strictly following this output structure, and nothing mo
 """
 
 
-tree_template_1 = "Here is a conversation between an <Opponent> and a <Defendant> on the topic of" 
+tree_template_1 = "Here is a conversation between an <Opponent> and a <You> on the topic of" 
 tree_template_2 = ": "
 tree_template_3 = """
 
-Now, let's traverse the following decision_tree (provided in JSON format) from the point of view of the <Defendant>. 
+Now, let's traverse the following decision_tree (provided in JSON format) from the point of view of You. 
 Only respond with the question value and branch taken value.
 
 decision_tree={
@@ -53,13 +53,13 @@ decision_tree={
   'branches': {
     'YES': {
       'node_type': 'decision',
-      'question': 'Does the <Opponent>’s argumentation puts the <Defendant> at a disadvantage?',
+      'question': 'Does the <Opponent>’s argumentation puts You at a disadvantage?',
       'branches': {
         'YES': {
           'node_type': 'strategy',
           'state': 'DEFENSE STATE',
           'branches': {
-            'question': 'Is the <Opponent>'s attacking our thesis directly?',
+            'question': 'Is the <Opponent>'s attacking your thesis directly?',
             'branches': {
               'YES': {
                 'node_type': 'decision',
@@ -236,7 +236,7 @@ decision_tree={
 """
 
 reply_template = """
-    You are the <Defendant> replying to an <Opponent> in a conversation. Here is the conversation history: {conv}.
+    You are <You> replying to an <Opponent> in a conversation. Here is the conversation history: {conv}.
     Here is what you have inferred about the <Opponent> to craft your reply: {tree_traversal}
 """
 
