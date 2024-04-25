@@ -64,6 +64,9 @@ debate_tree = {
     "9": {"action": "Request clarifications", "id": "00"},
 }
 
+
+import json
+import concurrent.futures
 import random
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
@@ -72,9 +75,9 @@ from dotenv import load_dotenv
 
 load_dotenv(".env")
 
-MISTRAL_API_TOKEN = os.getenv("MISTRAL_API_TOKEN")
+MISTRAL_API_TOKEN = os.getenv('MISTRAL_API_TOKEN')
 
-model = "mistral-large-latest"
+model = 'mistral-large-latest'
 client = MistralClient(api_key=MISTRAL_API_TOKEN)
 
 history = """<Opponent> I firmly believe that Android is superior to Apple in every way. Android offers more customization options, a wider range of devices to choose from, and it's more affordable too. </Opponent>
@@ -104,16 +107,10 @@ You are analysing the opponent's arguments. Based on your analysis, answer the q
 
 Only reply \"yes\" or \"no\". Do not answer anything else, do not describe your thoughts. Merely just answer \"yes\" or \"no\"."""
 
-
+# Function to get response from AI
 def get_ai_response(prompt):
-    # Communicate with an AI model to get a response, simulated here.
-    response = client.chat(
-        model=model, messages=[ChatMessage(role="user", content=prompt)]
-    )
-
-    # Assume the response is expected to be 'yes' or 'no'.
+    response = client.chat(model=model, messages=[ChatMessage(role="user", content=prompt)])
     return response.choices[0].message.content
-
 
 def q_response_parse(string):
     if "yes" in string.lower():
@@ -122,40 +119,27 @@ def q_response_parse(string):
         return "no"
     return "err"
 
-
-def navigate_game_tree(tree, history, starting_node_id="0"):
-    current_node = tree[starting_node_id]  # Start at the specified root node
-
+def process_debate(history_item):
+    current_node = debate_tree["0"]
     while "question" in current_node:
-        print(current_node["question"])  # Print the current question
-
-        # Format the question with the history
-        formatted_question = q_prompt_template.format(
-            history=history, question=current_node["question"]
-        )
-
-        # Get AI's response to the current question
+        formatted_question = q_prompt_template.format(history=history_item, question=current_node["question"])
         ai_answer = get_ai_response(formatted_question)
-        print(f"AI's answer: {ai_answer}")
-
-        # Move to the next node based on the AI's answer
-        if q_response_parse(ai_answer) in current_node["answers"]:
-            next_node_id = current_node["answers"][q_response_parse(ai_answer)]
-            current_node = tree[next_node_id]
-        else:
-            print("Error: AI provided an invalid response.")
-            break
-
-    # Once we reach an action node, print the action
+        next_node_id = current_node["answers"][q_response_parse(ai_answer)]
+        current_node = debate_tree[next_node_id]
     if "action" in current_node:
-        print("Action to take:", current_node["action"])
-        # Format the action with the history
-        formatted_action = a_prompt_template.format(
-            history=history, action=current_node["action"]
-        )
+        formatted_action = a_prompt_template.format(history=history_item, action=current_node["action"])
         ai_action_response = get_ai_response(formatted_action)
-        print(f"AI's action response: {ai_action_response}")
+        return {"history": history_item, "action_id": current_node["id"], "response": ai_action_response}
+    else:
+        return {"history": history_item, "action_id": None, "response": "No action available"}
 
+# Main execution with parallel processing
+def main():
+    histories = ["Argument about climate change", "Debate on economic policy", "Discussion on healthcare reforms"]
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = list(executor.map(process_debate, histories))
+    with open("debate_results.json", "w") as f:
+        json.dump(results, f)
 
-# Example usage of the function
-navigate_game_tree(debate_tree, history)
+# Execute main function
+main()
