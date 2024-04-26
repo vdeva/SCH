@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from tree import main
+from tree import process_debate
 
 app = FastAPI()
 
@@ -10,8 +10,8 @@ async def root():
 
 
 @app.post("/call_model/")
-async def post_model_call(test: int):
-    return {"output": test}
+async def post_model_call(history: str):
+    return process_debate(history)
 
 
 if __name__ == "__main__":
