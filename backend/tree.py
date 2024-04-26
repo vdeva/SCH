@@ -113,10 +113,6 @@ MISTRAL_API_TOKEN = os.getenv('MISTRAL_API_TOKEN')
 model = 'mistral-large-latest'
 client = MistralClient(api_key=MISTRAL_API_TOKEN)
 
-history = """<Opponent> I firmly believe that Android is superior to Apple in every way. Android offers more customization options, a wider range of devices to choose from, and it's more affordable too. </Opponent>
-<You> While it's true that Android does offer more customization and a wider range of devices, Apple's ecosystem is seamless and they offer top-notch customer service. Plus, Apple devices tend to have a longer lifespan. </You>
-<Opponent> Well, that's where you're wrong. Android devices can last just as long with proper care. And as for customer service, Google's customer service is just as good, if not better. Plus, Android's open-source nature allows for more innovation and freedom. </Opponent>"""
-
 a_prompt_template = """You are in a debate.
 
 Here is the history of the debate you are in:
@@ -127,6 +123,7 @@ You are replying to your opponent. Use the strategy below:
 
 Don't be polite. Be snarky.
 """
+
 
 q_prompt_template = """You are in a debate.
 
@@ -164,13 +161,14 @@ def process_debate(history_item):
     else:
         return {"history": history_item, "action_id": None, "response": "No action available"}
 
-# Main execution with parallel processing
 def main():
-    histories = ["Argument about climate change", "Debate on economic policy", "Discussion on healthcare reforms"]
+    with open("histories.json", "r") as f:
+        histories_data = json.load(f)
+    histories = list(histories_data.values())
     with concurrent.futures.ThreadPoolExecutor() as executor:
         results = list(executor.map(process_debate, histories))
-    with open("debate_results.json", "w") as f:
-        json.dump(results, f)
+    with open("debate_results.json", "w") as f_out:
+        json.dump(results, f_out)
 
-# Execute main function
-main()
+if __name__ == "__main__":
+    main()
