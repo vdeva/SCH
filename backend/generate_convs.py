@@ -164,10 +164,10 @@ def generate_convs(n, properties=properties, topics=topics):
     return all_convs
 
 def main(n):
-    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
-        results = list(executor.map(generate_convs, [n]))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        results = list(executor.map(generate_convs, [n for i in range(10)]))
     # Write convs
     with open("all_convs.json",'w') as f:
         json.dump(results, f)
 
-main(100)
+main(10)
