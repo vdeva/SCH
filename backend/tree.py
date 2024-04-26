@@ -121,7 +121,7 @@ Here is the history of the debate you are in:
 You are replying to your opponent. Use the strategy below:
 {action}
 
-Don't be polite. Be snarky.
+Don't always be polite. You can be snarky.
 """
 
 
