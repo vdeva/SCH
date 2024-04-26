@@ -139,7 +139,7 @@ Only reply \"yes\" or \"no\". Do not answer anything else, do not describe your 
 # Function to get response from AI
 def get_ai_response(prompt):
     response = client.chat(
-        model=model, messages=[ChatMessage(role="user", content=prompt)]
+        model=model, messages=[ChatMessage(role="user", content=prompt)], random_seed=42
     )
     return response.choices[0].message.content
 
