@@ -108,9 +108,9 @@ from dotenv import load_dotenv
 
 load_dotenv(".env")
 
-MISTRAL_API_TOKEN = os.getenv('MISTRAL_API_TOKEN')
+MISTRAL_API_TOKEN = os.getenv("MISTRAL_API_TOKEN")
 
-model = 'mistral-large-latest'
+model = "mistral-large-latest"
 client = MistralClient(api_key=MISTRAL_API_TOKEN)
 
 a_prompt_template = """You are in a debate.
@@ -135,10 +135,14 @@ You are analysing the opponent's arguments. Based on your analysis, answer the q
 
 Only reply \"yes\" or \"no\". Do not answer anything else, do not describe your thoughts. Merely just answer \"yes\" or \"no\"."""
 
+
 # Function to get response from AI
 def get_ai_response(prompt):
-    response = client.chat(model=model, messages=[ChatMessage(role="user", content=prompt)])
+    response = client.chat(
+        model=model, messages=[ChatMessage(role="user", content=prompt)]
+    )
     return response.choices[0].message.content
+
 
 def q_response_parse(string):
     if "yes" in string.lower():
@@ -147,19 +151,33 @@ def q_response_parse(string):
         return "no"
     return "err"
 
+
 def process_debate(history_item):
     current_node = debate_tree["0"]
     while "question" in current_node:
-        formatted_question = q_prompt_template.format(history=history_item, question=current_node["question"])
+        formatted_question = q_prompt_template.format(
+            history=history_item, question=current_node["question"]
+        )
         ai_answer = get_ai_response(formatted_question)
         next_node_id = current_node["answers"][q_response_parse(ai_answer)]
         current_node = debate_tree[next_node_id]
     if "action" in current_node:
-        formatted_action = a_prompt_template.format(history=history_item, action=current_node["action"])
+        formatted_action = a_prompt_template.format(
+            history=history_item, action=current_node["action"]
+        )
         ai_action_response = get_ai_response(formatted_action)
-        return {"history": history_item, "action_id": current_node["id"], "response": ai_action_response}
+        return {
+            "history": history_item,
+            "action_id": current_node["id"],
+            "response": ai_action_response,
+        }
     else:
-        return {"history": history_item, "action_id": None, "response": "No action available"}
+        return {
+            "history": history_item,
+            "action_id": None,
+            "response": "No action available",
+        }
+
 
 def main():
     with open("histories.json", "r") as f:
@@ -169,6 +187,7 @@ def main():
         results = list(executor.map(process_debate, histories))
     with open("debate_results.json", "w") as f_out:
         json.dump(results, f_out)
+
 
 if __name__ == "__main__":
     main()
