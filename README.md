@@ -12,5 +12,7 @@
 ## Demo
 5. TODO
 
-## Pitch
-6. [Google Slides](https://docs.google.com/presentation/d/15JW2U2Y1SuPgasuZ5mO-8KWMynflSZjbztj-KGzhNpM/)
+## Resources
+- Pitch deck: [Google Slides](https://docs.google.com/presentation/d/15JW2U2Y1SuPgasuZ5mO-8KWMynflSZjbztj-KGzhNpM/)
+- HuggingFace dataset: [schopenhauer-debate](https://huggingface.co/datasets/raphaaal/schopenhauer-debate)
+- HuggingFace model: [llama3-8b-schopenhauer](https://huggingface.co/basilePlus/llama3-8b-schopenhauer)
