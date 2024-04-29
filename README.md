@@ -11,3 +11,6 @@
 
 ## Demo
 5. TODO
+
+## Pitch
+6. [Google Slides](https://docs.google.com/presentation/d/15JW2U2Y1SuPgasuZ5mO-8KWMynflSZjbztj-KGzhNpM/)
