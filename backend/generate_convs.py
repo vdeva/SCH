@@ -158,7 +158,7 @@ def main(n):
     with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
         results = list(executor.map(generate_convs, [n for i in range(100)]))
 
-    with open("all_convs.json",'w') as f:
+    with open("histories.json",'w') as f:
         json.dump(results, f)
 
 main(1) # Will generate 10 times more convs (multi-threading)

@@ -10,6 +10,7 @@ def process_data(input_file, output_file):
     # Process each item in the input data list
     for item in input_data:
         history = item['history']
+        history = list(history.values())[0]
         response = item['response']
         action_id = item['action_id']
         

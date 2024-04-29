@@ -106,11 +106,9 @@ from mistralai.models.chat_completion import ChatMessage
 import os
 from dotenv import load_dotenv
 
-load_dotenv(".env")
 
 MISTRAL_API_TOKEN = os.getenv("MISTRAL_API_TOKEN")
-
-model = "mistral-large-latest"
+model = 'mistral-large-latest'
 client = MistralClient(api_key=MISTRAL_API_TOKEN)
 
 a_prompt_template = """You are in a debate.
@@ -121,7 +119,7 @@ Here is the history of the debate you are in:
 You are replying to your opponent. Use the strategy below:
 {action}
 
-Don't always be polite. You can be snarky.
+Don't be polite. Be snarky.
 """
 
 
@@ -135,17 +133,10 @@ You are analysing the opponent's arguments. Based on your analysis, answer the q
 
 Only reply \"yes\" or \"no\". Do not answer anything else, do not describe your thoughts. Merely just answer \"yes\" or \"no\"."""
 
-
 # Function to get response from AI
 def get_ai_response(prompt):
-    response = client.chat(
-        model=model,
-        messages=[ChatMessage(role="user", content=prompt)],
-        random_seed=42,
-        temperature=0.7,
-    )
+    response = client.chat(model=model, messages=[ChatMessage(role="user", content=prompt)])
     return response.choices[0].message.content
-
 
 def q_response_parse(string):
     if "yes" in string.lower():
@@ -154,43 +145,35 @@ def q_response_parse(string):
         return "no"
     return "err"
 
-
 def process_debate(history_item):
     current_node = debate_tree["0"]
     while "question" in current_node:
-        formatted_question = q_prompt_template.format(
-            history=history_item, question=current_node["question"]
-        )
+        formatted_question = q_prompt_template.format(history=history_item, question=current_node["question"])
         ai_answer = get_ai_response(formatted_question)
         next_node_id = current_node["answers"][q_response_parse(ai_answer)]
         current_node = debate_tree[next_node_id]
     if "action" in current_node:
-        formatted_action = a_prompt_template.format(
-            history=history_item, action=current_node["action"]
-        )
+        formatted_action = a_prompt_template.format(history=history_item, action=current_node["action"])
         ai_action_response = get_ai_response(formatted_action)
-        return {
-            "history": history_item,
-            "action_id": current_node["id"],
-            "response": ai_action_response,
-        }
+        return {"history": history_item, "action_id": current_node["id"], "response": ai_action_response}
     else:
-        return {
-            "history": history_item,
-            "action_id": None,
-            "response": "No action available",
-        }
-
+        return {"history": history_item, "action_id": None, "response": "No action available"}
 
 def main():
     with open("histories.json", "r") as f:
         histories_data = json.load(f)
-    histories = list(histories_data.values())
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = list(executor.map(process_debate, histories))
+
+    flat_list = []
+    for i, hist_d in enumerate(histories_data):
+        for j, (k, v) in enumerate(hist_d.items()):
+            new_hist = {i*10 + j: v}
+            flat_list.append(new_hist)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        results = list(executor.map(process_debate, flat_list))
+
     with open("debate_results.json", "w") as f_out:
         json.dump(results, f_out)
 
-
 if __name__ == "__main__":
-    main()
+    main() # Processes the generated conversations to produce reply based on tree
