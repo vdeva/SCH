@@ -11,7 +11,8 @@ async def root():
 
 @app.post("/call_model/")
 async def post_model_call(history: str):
-    return process_debate(history)
+    tweet_context = "The first opponent argument is a tweet that is attacking the reputation of the Silicon Valley Bank. Your answer needs to be very short and impactful as a Tweet. "
+    return process_debate(tweet_context + history)
 
 
 if __name__ == "__main__":
