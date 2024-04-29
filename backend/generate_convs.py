@@ -8,11 +8,9 @@ import re
 import concurrent.futures
 
 
-REPLICATE_API_TOKEN = os.getenv('REPLICATE_API_TOKEN')
-
-api_key = 'e7bFCX6QqNaR2LAV0ZT8zklGIfVzVLo3'
+MISTRAL_API_TOKEN = os.getenv("MISTRAL_API_TOKEN")
 model = 'mistral-large-latest'
-client = MistralClient(api_key=api_key)
+client = MistralClient(api_key=MISTRAL_API_TOKEN)
 
 properties = {
     1:"""
@@ -141,14 +139,9 @@ topics = [
 def generate_convs(n, properties=properties, topics=topics):
     all_convs = {}
     for i in range(n):
-        print(i)
         prop = random.choice(list(properties.values()))
-        #print(prop)
         n_turns = random.randrange(1, 5, 2)
-        #print(f"Generating {n_turns} turns")
         topic = random.choice(topics)
-        #print(topic)
-        # Temperature?
         chat_conv= client.chat(
             model=model,
             messages=[ChatMessage(
@@ -159,15 +152,13 @@ def generate_convs(n, properties=properties, topics=topics):
         )
         conv = chat_conv.choices[0].message.content
         all_convs[i] = re.sub(r'Tweet \d+:\n', "", conv).replace("\n\n", "")
-        #print(conv)
-        #print("---")
     return all_convs
 
 def main(n):
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        results = list(executor.map(generate_convs, [n for i in range(10)]))
-    # Write convs
+    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        results = list(executor.map(generate_convs, [n for i in range(100)]))
+
     with open("all_convs.json",'w') as f:
         json.dump(results, f)
 
-main(10)
+main(1) # Will generate 10 times more convs (multi-threading)
